@@ -7,7 +7,7 @@ App en Next.js (App Router) para registrar ingresos y gastos, con base de datos 
 1. **Base de datos**: en tu proyecto de Supabase abrí *SQL Editor*, pegá el contenido de [`supabase/schema.sql`](supabase/schema.sql) y ejecutalo.
 2. **Variables de entorno**: `cp .env.example .env.local` y completá:
    - `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` (Project Settings → API). La service role key solo se usa en el servidor.
-   - `OPENROUTER_API_KEY` (https://openrouter.ai/keys) y opcionalmente `OPENROUTER_MODEL` (cualquier modelo `:free`).
+   - `OPENROUTER_API_KEY` (https://openrouter.ai/keys) y opcionalmente `OPENROUTER_MODEL` (default `openrouter/free`; admite varios separados por comas como fallback).
 3. `npm install && npm run dev` → http://localhost:3000
 
 ## Estructura

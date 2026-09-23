@@ -3,7 +3,18 @@ import { jsonError } from "@/lib/api";
 import { CATEGORIES, transactionInputSchema } from "@/lib/schemas";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
+// openrouter/free elige automáticamente un modelo gratuito disponible.
+const DEFAULT_MODEL = "openrouter/free";
+
+// OPENROUTER_MODEL admite una lista separada por comas: OpenRouter prueba
+// el siguiente si el primero falla (rate limit, caído, etc.).
+function modelParams() {
+  const models = (process.env.OPENROUTER_MODEL || DEFAULT_MODEL)
+    .split(",")
+    .map((m) => m.trim())
+    .filter(Boolean);
+  return models.length > 1 ? { models } : { model: models[0] };
+}
 
 const requestSchema = z.object({
   messages: z
@@ -77,7 +88,7 @@ export async function POST(request: Request) {
       "X-Title": "Gastos e Ingresos",
     },
     body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL || DEFAULT_MODEL,
+      ...modelParams(),
       temperature: 0.1,
       response_format: { type: "json_object" },
       messages: [{ role: "system", content: systemPrompt(today) }, ...messages],
@@ -85,12 +96,12 @@ export async function POST(request: Request) {
   });
 
   if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    console.error("OpenRouter error", res.status, detail);
+    const detail = await res.json().catch(() => null);
+    console.error("OpenRouter error", res.status, JSON.stringify(detail));
     const msg =
       res.status === 429
         ? "El modelo gratuito está saturado. Probá de nuevo en unos segundos."
-        : "No pude contactar al modelo de IA.";
+        : `Error del modelo de IA (${res.status}): ${detail?.error?.message ?? "sin detalle"}`;
     return jsonError(msg, 502);
   }
 
