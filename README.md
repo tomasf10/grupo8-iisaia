@@ -5,24 +5,29 @@ App en Next.js (App Router) para registrar ingresos y gastos, con base de datos 
 ## Setup
 
 1. **Base de datos**: en tu proyecto de Supabase abrí *SQL Editor*, pegá el contenido de [`supabase/schema.sql`](supabase/schema.sql) y ejecutalo.
-2. **Variables de entorno**: `cp .env.example .env.local` y completá:
-   - `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` (Project Settings → API). La service role key solo se usa en el servidor.
+2. **Auth**: en *Authentication → URL Configuration* poné como *Site URL* `http://localhost:3000` y agregá a *Redirect URLs* `http://localhost:3000/auth/callback` (y el puerto que uses, p. ej. 3001; o `http://localhost:*/auth/callback`). El proveedor *Email* viene habilitado por defecto.
+3. **Variables de entorno**: `cp .env.example .env.local` y completá:
+   - `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Project Settings → API Keys; sirve la publishable `sb_publishable_...` o la anon legacy).
    - `OPENROUTER_API_KEY` (https://openrouter.ai/keys) y opcionalmente `OPENROUTER_MODEL` (default `openrouter/free`; admite varios separados por comas como fallback).
-3. `npm install && npm run dev` → http://localhost:3000
+4. `npm install && npm run dev` → http://localhost:3000
 
 ## Estructura
 
 | Ruta | Qué hace |
 | --- | --- |
 | `app/page.tsx` | Totales + lista de registros (filtrar, editar, borrar) |
+| `app/login`, `app/auth/*` | Login con magic link, callback y logout |
+| `proxy.ts` | Refresca la sesión y redirige a `/login` si no hay usuario |
 | `app/new`, `app/[id]/edit` | Formulario de alta / edición |
 | `app/api/transactions` | `GET` (lista, `?type=income\|expense`), `POST` |
 | `app/api/transactions/[id]` | `GET`, `PATCH`, `DELETE` |
 | `app/api/chat` | Chatbot: interpreta el mensaje y devuelve una propuesta de registro |
 | `components/ChatWidget.tsx` | Chat flotante; el usuario confirma la propuesta antes de guardarla |
-| `lib/` | Cliente de Supabase, esquemas zod y acceso a datos |
+| `lib/` | Clientes de Supabase (server/browser/proxy), esquemas zod y acceso a datos |
 
 ## Notas
 
-- No hay autenticación: pensado para un único usuario. RLS está activado sin policies, así que la tabla solo es accesible desde el backend.
+- Autenticación con Supabase Auth (magic link). Cada usuario ve solo sus registros: el backend consulta con la sesión del usuario y las policies de RLS filtran por `user_id`.
+- El SMTP incluido en Supabase tiene un límite bajo de emails por hora (pensado para pruebas). Para uso real configurá un SMTP propio en *Authentication → Emails*.
+- El magic link hay que abrirlo en el mismo navegador donde se pidió (flujo PKCE).
 - Los modelos gratuitos de OpenRouter tienen rate limits; si responde 429 hay que reintentar o cambiar `OPENROUTER_MODEL`.

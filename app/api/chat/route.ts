@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { jsonError } from "@/lib/api";
 import { CATEGORIES, transactionInputSchema } from "@/lib/schemas";
+import { getUser } from "@/lib/supabase/server";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 // openrouter/free elige automáticamente un modelo gratuito disponible.
@@ -70,6 +71,8 @@ function extractJson(text: string): unknown {
 }
 
 export async function POST(request: Request) {
+  if (!(await getUser())) return jsonError("No autenticado", 401);
+
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return jsonError("Falta OPENROUTER_API_KEY en .env.local");
 

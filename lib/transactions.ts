@@ -1,5 +1,5 @@
 import "server-only";
-import { getSupabase } from "./supabase";
+import { createClient } from "./supabase/server";
 import type {
   Transaction,
   TransactionInput,
@@ -8,13 +8,16 @@ import type {
 
 const TABLE = "transactions";
 
+// Todas las queries usan la sesión del usuario: RLS filtra por user_id.
+
 // numeric de Postgres llega como string; lo normalizamos a number.
 function normalize(row: Transaction): Transaction {
   return { ...row, amount: Number(row.amount) };
 }
 
 export async function listTransactions(type?: TransactionType) {
-  let query = getSupabase()
+  const supabase = await createClient();
+  let query = supabase
     .from(TABLE)
     .select("*")
     .order("date", { ascending: false })
@@ -27,7 +30,8 @@ export async function listTransactions(type?: TransactionType) {
 }
 
 export async function getTransaction(id: string) {
-  const { data, error } = await getSupabase()
+  const supabase = await createClient();
+  const { data, error } = await supabase
     .from(TABLE)
     .select("*")
     .eq("id", id)
@@ -37,7 +41,8 @@ export async function getTransaction(id: string) {
 }
 
 export async function createTransaction(input: TransactionInput) {
-  const { data, error } = await getSupabase()
+  const supabase = await createClient();
+  const { data, error } = await supabase
     .from(TABLE)
     .insert(input)
     .select()
@@ -50,7 +55,8 @@ export async function updateTransaction(
   id: string,
   input: Partial<TransactionInput>,
 ) {
-  const { data, error } = await getSupabase()
+  const supabase = await createClient();
+  const { data, error } = await supabase
     .from(TABLE)
     .update(input)
     .eq("id", id)
@@ -61,7 +67,8 @@ export async function updateTransaction(
 }
 
 export async function deleteTransaction(id: string) {
-  const { data, error } = await getSupabase()
+  const supabase = await createClient();
+  const { data, error } = await supabase
     .from(TABLE)
     .delete()
     .eq("id", id)
