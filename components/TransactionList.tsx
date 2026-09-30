@@ -41,6 +41,29 @@ export default function TransactionList({
   });
   const hasActiveFilters = Boolean(period || category || search.trim());
 
+  function exportCsv() {
+    const escapeCsv = (value: string | number) => `"${String(value).replaceAll('"', '""')}"`;
+    const rows = [
+      ["Fecha", "Tipo", "Categoría", "Descripción", "Monto"],
+      ...visible.map((t) => [
+        t.date,
+        t.type === "income" ? "Ingreso" : "Gasto",
+        t.category,
+        t.description ?? "",
+        t.amount.toFixed(2),
+      ]),
+    ];
+    const csv = `\uFEFF${rows.map((row) => row.map(escapeCsv).join(",")).join("\r\n")}`;
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `movimientos${period ? `-${period}` : ""}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
   async function onDelete(t: Transaction) {
     const label = `${TYPE_LABEL[t.type]} de ${formatMoney(t.amount)} (${t.category})`;
     if (!confirm(`¿Borrar ${label}?`)) return;
@@ -123,6 +146,17 @@ export default function TransactionList({
           </button>
         </div>
       )}
+
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={exportCsv}
+          disabled={visible.length === 0}
+          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+        >
+          Exportar {visible.length} a CSV
+        </button>
+      </div>
 
       {visible.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700">
