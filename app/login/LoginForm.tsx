@@ -1,12 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    function onStorage(event: StorageEvent) {
+      if (event.key !== "iisaia-auth-complete" || !event.newValue) return;
+      router.replace("/");
+      router.refresh();
+    }
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,7 +49,7 @@ export default function LoginForm() {
         <p className="font-medium">Revisá tu email 📬</p>
         <p className="mt-1 text-zinc-500">
           Mandamos un link a <strong>{email}</strong>. Abrilo en este mismo
-          navegador.
+          navegador y esta pestaña iniciará sesión automáticamente.
         </p>
         <button
           onClick={() => setStatus("idle")}
