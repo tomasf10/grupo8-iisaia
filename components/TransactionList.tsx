@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import type { Transaction, TransactionType } from "@/lib/schemas";
+import { useMemo, useState } from "react";
+import { CATEGORIES, type Transaction, type TransactionType } from "@/lib/schemas";
 import { formatDate, formatMoney, TYPE_LABEL } from "@/lib/format";
 
 const FILTERS: { value: TransactionType | "all"; label: string }[] = [
@@ -19,12 +19,24 @@ export default function TransactionList({
 }) {
   const router = useRouter();
   const [filter, setFilter] = useState<TransactionType | "all">("all");
+  const [period, setPeriod] = useState("");
+  const [category, setCategory] = useState("");
+  const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  const visible =
-    filter === "all"
-      ? transactions
-      : transactions.filter((t) => t.type === filter);
+  const categories = useMemo(
+    () => [...new Set(transactions.map((t) => t.category))].sort((a, b) => a.localeCompare(b, "es")),
+    [transactions],
+  );
+  const visible = transactions.filter((t) => {
+    const matchesType = filter === "all" || t.type === filter;
+    const matchesPeriod = !period || t.date.startsWith(period);
+    const matchesCategory = !category || t.category === category;
+    const term = search.trim().toLocaleLowerCase("es");
+    const matchesSearch = !term || `${t.category} ${t.description ?? ""}`.toLocaleLowerCase("es").includes(term);
+    return matchesType && matchesPeriod && matchesCategory && matchesSearch;
+  });
+  const hasActiveFilters = Boolean(period || category || search.trim());
 
   async function onDelete(t: Transaction) {
     const label = `${TYPE_LABEL[t.type]} de ${formatMoney(t.amount)} (${t.category})`;
@@ -58,9 +70,59 @@ export default function TransactionList({
         ))}
       </div>
 
+      <div className="grid gap-3 sm:grid-cols-3">
+        <label className="space-y-1">
+          <span className="block text-xs font-medium text-zinc-500">Mes</span>
+          <input
+            type="month"
+            value={period}
+            onChange={(e) => setPeriod(e.target.value)}
+            aria-label="Filtrar por mes"
+            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          />
+        </label>
+        <label className="space-y-1">
+          <span className="block text-xs font-medium text-zinc-500">Categoría</span>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            aria-label="Filtrar por categoría"
+            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          >
+            <option value="">Todas las categorías</option>
+            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </label>
+        <label className="space-y-1">
+          <span className="block text-xs font-medium text-zinc-500">Buscar</span>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Categoría o descripción"
+            aria-label="Buscar movimientos"
+            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          />
+        </label>
+      </div>
+      {hasActiveFilters && (
+        <div className="flex items-center justify-between text-xs text-zinc-500">
+          <span>{visible.length} de {transactions.length} movimientos</span>
+          <button
+            type="button"
+            onClick={() => { setPeriod(""); setCategory(""); setSearch(""); }}
+            className="rounded px-2 py-1 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+      )}
+
       {visible.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700">
-          No hay registros todavía. Creá uno con el botón o pedíselo al asistente.
+          {transactions.length === 0
+            ? "No hay registros todavía. Creá uno con el botón o pedíselo al asistente."
+            : "No hay movimientos que coincidan con esos filtros."}
         </p>
       ) : (
         <ul className="divide-y divide-zinc-200 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
