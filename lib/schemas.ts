@@ -18,6 +18,14 @@ export const CATEGORIES = {
 
 export const transactionTypeSchema = z.enum(["income", "expense"]);
 
+export const budgetInputSchema = z.object({
+  category: z.string().trim().min(1).max(60),
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Mes inválido (YYYY-MM)"),
+  amount: z.coerce.number().positive("El presupuesto debe ser mayor a 0"),
+});
+
+export const budgetQuerySchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
+
 export const transactionInputSchema = z.object({
   type: transactionTypeSchema,
   amount: z.coerce.number().positive("El monto debe ser mayor a 0"),
@@ -34,6 +42,8 @@ export const transactionInputSchema = z.object({
 export const transactionUpdateSchema = transactionInputSchema.partial();
 
 export type TransactionType = z.infer<typeof transactionTypeSchema>;
+export type BudgetInput = z.infer<typeof budgetInputSchema>;
+export type Budget = BudgetInput & { id: string };
 export type TransactionInput = z.infer<typeof transactionInputSchema>;
 
 export type Transaction = TransactionInput & {

@@ -4,9 +4,12 @@ import type {
   Transaction,
   TransactionInput,
   TransactionType,
+  Budget,
+  BudgetInput,
 } from "./schemas";
 
 const TABLE = "transactions";
+const BUDGET_TABLE = "budgets";
 
 // Todas las queries usan la sesión del usuario: RLS filtra por user_id.
 
@@ -73,6 +76,36 @@ export async function deleteTransaction(id: string) {
     .delete()
     .eq("id", id)
     .select("id");
+  if (error) throw new Error(error.message);
+  return data.length > 0;
+}
+
+export async function listBudgets(month: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from(BUDGET_TABLE)
+    .select("id, category, month, amount")
+    .eq("month", `${month}-01`)
+    .order("category");
+  if (error) throw new Error(error.message);
+  return (data as Budget[]).map((budget) => ({ ...budget, month: budget.month.slice(0, 7), amount: Number(budget.amount) }));
+}
+
+export async function saveBudget(input: BudgetInput) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from(BUDGET_TABLE)
+    .upsert({ ...input, month: `${input.month}-01` }, { onConflict: "user_id,month,category" })
+    .select("id, category, month, amount")
+    .single();
+  if (error) throw new Error(error.message);
+  const budget = data as Budget;
+  return { ...budget, month: budget.month.slice(0, 7), amount: Number(budget.amount) };
+}
+
+export async function deleteBudget(id: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from(BUDGET_TABLE).delete().eq("id", id).select("id");
   if (error) throw new Error(error.message);
   return data.length > 0;
 }

@@ -26,6 +26,7 @@ export default function TransactionList({
   const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
 
+
   const categories = useMemo(
     () => [...new Set(transactions.map((t) => t.category))].sort((a, b) => a.localeCompare(b, "es")),
     [transactions],

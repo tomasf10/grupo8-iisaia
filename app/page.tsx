@@ -3,14 +3,17 @@ import { connection } from "next/server";
 import SetupError from "@/components/SetupError";
 import MonthlyOverview from "@/components/MonthlyOverview";
 import type { Transaction } from "@/lib/schemas";
-import { listTransactions } from "@/lib/transactions";
+import { listBudgets, listTransactions } from "@/lib/transactions";
 
 export default async function Home() {
   await connection();
 
   let transactions: Transaction[];
+  let budgets;
   try {
-    transactions = await listTransactions();
+    const now = new Date();
+    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    [transactions, budgets] = await Promise.all([listTransactions(), listBudgets(month)]);
   } catch (e) {
     return <SetupError message={(e as Error).message} />;
   }
@@ -29,7 +32,7 @@ export default async function Home() {
         </Link>
       </header>
 
-      <MonthlyOverview transactions={transactions} />
+      <MonthlyOverview transactions={transactions} initialBudgets={budgets} />
     </div>
   );
 }

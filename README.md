@@ -4,7 +4,7 @@ App en Next.js (App Router) para registrar ingresos y gastos, con base de datos 
 
 ## Setup
 
-1. **Base de datos**: en tu proyecto de Supabase abrí *SQL Editor*, pegá el contenido de [`supabase/schema.sql`](supabase/schema.sql) y ejecutalo.
+1. **Base de datos**: en tu proyecto de Supabase abrí *SQL Editor*, pegá el contenido de [`supabase/schema.sql`](supabase/schema.sql) y ejecutalo. Si ya tenías la app configurada, volvé a ejecutar el script para crear la tabla de presupuestos mensuales.
 2. **Auth**: en *Authentication → URL Configuration* poné como *Site URL* `http://localhost:3000` y agregá a *Redirect URLs* `http://localhost:3000/auth/callback` (y el puerto que uses, p. ej. 3001; o `http://localhost:*/auth/callback`). El proveedor *Email* viene habilitado por defecto.
 3. **Variables de entorno**: `cp .env.example .env.local` y completá:
    - `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Project Settings → API Keys; sirve la publishable `sb_publishable_...` o la anon legacy).
@@ -15,12 +15,13 @@ App en Next.js (App Router) para registrar ingresos y gastos, con base de datos 
 
 | Ruta | Qué hace |
 | --- | --- |
-| `app/page.tsx` | Totales + lista de registros (filtrar, editar, borrar) |
+| `app/page.tsx` | Resumen mensual, gráficos, presupuestos y lista de registros |
 | `app/login`, `app/auth/*` | Login con magic link, callback y logout |
 | `proxy.ts` | Refresca la sesión y redirige a `/login` si no hay usuario |
 | `app/new`, `app/[id]/edit` | Formulario de alta / edición |
 | `app/api/transactions` | `GET` (lista, `?type=income\|expense`), `POST` |
 | `app/api/transactions/[id]` | `GET`, `PATCH`, `DELETE` |
+| `app/api/budgets` | `GET` por mes, `POST` (crear o actualizar), `DELETE` |
 | `app/api/chat` | Chatbot: interpreta el mensaje y devuelve una propuesta de registro |
 | `components/ChatWidget.tsx` | Chat flotante; el usuario confirma la propuesta antes de guardarla |
 | `lib/` | Clientes de Supabase (server/browser/proxy), esquemas zod y acceso a datos |

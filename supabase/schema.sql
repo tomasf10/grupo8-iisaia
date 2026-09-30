@@ -95,3 +95,44 @@ create policy "transactions_delete_own" on public.transactions
 grant usage on schema public to authenticated, service_role;
 grant select, insert, update, delete on public.transactions to authenticated, service_role;
 revoke all on public.transactions from anon;
+
+-- Presupuestos mensuales por categoría, aislados por usuario mediante RLS.
+create table if not exists public.budgets (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  category    text not null check (length(trim(category)) between 1 and 60),
+  month       date not null check (extract(day from month) = 1),
+  amount      numeric(12, 2) not null check (amount > 0),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now(),
+  unique (user_id, month, category)
+);
+
+create index if not exists budgets_user_month_idx on public.budgets (user_id, month);
+
+drop trigger if exists budgets_set_updated_at on public.budgets;
+create trigger budgets_set_updated_at
+  before update on public.budgets
+  for each row execute function public.set_updated_at();
+
+alter table public.budgets enable row level security;
+
+drop policy if exists "budgets_select_own" on public.budgets;
+create policy "budgets_select_own" on public.budgets
+  for select to authenticated using ((select auth.uid()) = user_id);
+
+drop policy if exists "budgets_insert_own" on public.budgets;
+create policy "budgets_insert_own" on public.budgets
+  for insert to authenticated with check ((select auth.uid()) = user_id);
+
+drop policy if exists "budgets_update_own" on public.budgets;
+create policy "budgets_update_own" on public.budgets
+  for update to authenticated using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+
+drop policy if exists "budgets_delete_own" on public.budgets;
+create policy "budgets_delete_own" on public.budgets
+  for delete to authenticated using ((select auth.uid()) = user_id);
+
+grant select, insert, update, delete on public.budgets to authenticated, service_role;
+revoke all on public.budgets from anon;
