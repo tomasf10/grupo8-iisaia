@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { CATEGORIES, type Transaction, type TransactionType } from "@/lib/schemas";
+import type { Transaction, TransactionType } from "@/lib/schemas";
 import { formatDate, formatMoney, TYPE_LABEL } from "@/lib/format";
 
 const FILTERS: { value: TransactionType | "all"; label: string }[] = [
@@ -14,8 +14,10 @@ const FILTERS: { value: TransactionType | "all"; label: string }[] = [
 
 export default function TransactionList({
   transactions,
+  onPeriodChange,
 }: {
   transactions: Transaction[];
+  onPeriodChange: (period: string) => void;
 }) {
   const router = useRouter();
   const [filter, setFilter] = useState<TransactionType | "all">("all");
@@ -76,7 +78,10 @@ export default function TransactionList({
           <input
             type="month"
             value={period}
-            onChange={(e) => setPeriod(e.target.value)}
+            onChange={(e) => {
+              setPeriod(e.target.value);
+              onPeriodChange(e.target.value);
+            }}
             aria-label="Filtrar por mes"
             className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
           />
@@ -110,7 +115,7 @@ export default function TransactionList({
           <span>{visible.length} de {transactions.length} movimientos</span>
           <button
             type="button"
-            onClick={() => { setPeriod(""); setCategory(""); setSearch(""); }}
+            onClick={() => { setPeriod(""); setCategory(""); setSearch(""); onPeriodChange(""); }}
             className="rounded px-2 py-1 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
           >
             Limpiar filtros

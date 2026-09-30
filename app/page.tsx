@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import SetupError from "@/components/SetupError";
-import TransactionList from "@/components/TransactionList";
-import { formatMoney } from "@/lib/format";
+import MonthlyOverview from "@/components/MonthlyOverview";
 import type { Transaction } from "@/lib/schemas";
 import { listTransactions } from "@/lib/transactions";
 
@@ -15,14 +14,6 @@ export default async function Home() {
   } catch (e) {
     return <SetupError message={(e as Error).message} />;
   }
-
-  const income = transactions
-    .filter((t) => t.type === "income")
-    .reduce((sum, t) => sum + t.amount, 0);
-  const expense = transactions
-    .filter((t) => t.type === "expense")
-    .reduce((sum, t) => sum + t.amount, 0);
-  const balance = income - expense;
 
   return (
     <div className="space-y-8">
@@ -38,28 +29,7 @@ export default async function Home() {
         </Link>
       </header>
 
-      <section className="grid gap-3 sm:grid-cols-3">
-        <Stat label="Ingresos" value={income} tone="text-emerald-700 dark:text-emerald-400" />
-        <Stat label="Gastos" value={expense} tone="text-rose-700 dark:text-rose-400" />
-        <Stat
-          label="Balance"
-          value={balance}
-          tone={balance < 0 ? "text-rose-700 dark:text-rose-400" : ""}
-        />
-      </section>
-
-      <TransactionList transactions={transactions} />
-    </div>
-  );
-}
-
-function Stat({ label, value, tone }: { label: string; value: number; tone: string }) {
-  return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-xs text-zinc-500">{label}</p>
-      <p className={`mt-1 text-xl font-semibold tabular-nums ${tone}`}>
-        {formatMoney(value)}
-      </p>
+      <MonthlyOverview transactions={transactions} />
     </div>
   );
 }
