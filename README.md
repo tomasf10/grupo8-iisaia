@@ -22,7 +22,7 @@ App en Next.js (App Router) para registrar ingresos y gastos, con base de datos 
 | `app/api/transactions` | `GET` (lista, `?type=income\|expense`), `POST` |
 | `app/api/transactions/[id]` | `GET`, `PATCH`, `DELETE` |
 | `app/api/budgets` | `GET` por mes, `POST` (crear o actualizar), `DELETE` |
-| `app/api/chat` | Chatbot: interpreta el mensaje y devuelve una propuesta de registro |
+| `app/api/chat` | Chatbot: propone un registro o responde consultas sobre los movimientos |
 | `components/ChatWidget.tsx` | Chat flotante; el usuario confirma la propuesta antes de guardarla |
 | `lib/` | Clientes de Supabase (server/browser/proxy), esquemas zod y acceso a datos |
 

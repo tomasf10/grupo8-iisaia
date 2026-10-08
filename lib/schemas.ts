@@ -41,7 +41,21 @@ export const transactionInputSchema = z.object({
 
 export const transactionUpdateSchema = transactionInputSchema.partial();
 
+export const insightQuerySchema = z.object({
+  kind: z.enum(["sum", "top"]),
+  type: transactionTypeSchema,
+  category: z
+    .string()
+    .trim()
+    .max(60)
+    .nullish()
+    .transform((v) => v || null),
+  from: z.iso.date(),
+  to: z.iso.date(),
+});
+
 export type TransactionType = z.infer<typeof transactionTypeSchema>;
+export type InsightQuery = z.infer<typeof insightQuerySchema>;
 export type BudgetInput = z.infer<typeof budgetInputSchema>;
 export type Budget = BudgetInput & { id: string };
 export type TransactionInput = z.infer<typeof transactionInputSchema>;

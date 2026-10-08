@@ -15,7 +15,7 @@ type Message = {
 const GREETING: Message = {
   role: "assistant",
   content:
-    'Hola 👋 Contame un gasto o ingreso y lo registro. Por ejemplo: "gasté 3500 en el súper ayer" o "cobré 250 mil de sueldo".',
+    'Hola 👋 Puedo registrar un movimiento o responder sobre tus gastos. Por ejemplo: "gasté 3500 en el súper ayer" o "¿cuánto gasté en supermercado este mes?".',
 };
 
 export default function ChatWidget() {
@@ -109,7 +109,7 @@ export default function ChatWidget() {
         <div className="fixed right-4 bottom-22 z-50 flex h-[min(560px,calc(100dvh-7rem))] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-zinc-900">
           <header className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
             <p className="text-sm font-semibold">Asistente</p>
-            <p className="text-xs text-zinc-500">Registrá movimientos escribiendo</p>
+            <p className="text-xs text-zinc-500">Registrá movimientos o preguntá por tus gastos</p>
           </header>
 
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
@@ -148,7 +148,7 @@ export default function ChatWidget() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ej: pagué 12 mil de luz"
+              placeholder="Ej: ¿en qué gasté más este mes?"
               className="flex-1 rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm outline-none focus:border-zinc-900 dark:border-zinc-700 dark:focus:border-zinc-100"
               autoFocus
             />

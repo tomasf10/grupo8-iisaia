@@ -32,6 +32,26 @@ export async function listTransactions(type?: TransactionType) {
   return (data as Transaction[]).map(normalize);
 }
 
+export async function listTransactionsBetween(
+  from: string,
+  to: string,
+  type?: TransactionType,
+) {
+  const supabase = await createClient();
+  let query = supabase
+    .from(TABLE)
+    .select("*")
+    .gte("date", from)
+    .lte("date", to)
+    .order("date", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (type) query = query.eq("type", type);
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return (data as Transaction[]).map(normalize);
+}
+
 export async function getTransaction(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase

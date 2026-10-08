@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { jsonError } from "@/lib/api";
-import { CATEGORIES, transactionInputSchema } from "@/lib/schemas";
+import { answerInsight } from "@/lib/insights";
+import { CATEGORIES, insightQuerySchema, transactionInputSchema } from "@/lib/schemas";
 import { getUser } from "@/lib/supabase/server";
+import { listTransactionsBetween } from "@/lib/transactions";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 // openrouter/free elige automáticamente un modelo gratuito disponible.
@@ -33,12 +35,13 @@ const requestSchema = z.object({
 const modelOutputSchema = z.object({
   reply: z.string(),
   proposal: z.unknown().nullish(),
+  query: z.unknown().nullish(),
 });
 
 function systemPrompt(today: string) {
-  return `Sos un asistente de una app de finanzas personales. Tu única tarea es ayudar a registrar ingresos y gastos a partir de lo que escribe el usuario en lenguaje natural (en español rioplatense).
+  return `Sos un asistente de una app de finanzas personales. Ayudás a registrar ingresos y gastos, y también a consultar los movimientos ya cargados, a partir de lo que escribe el usuario en lenguaje natural (en español rioplatense).
 
-Hoy es ${today}. Resolvé fechas relativas ("ayer", "el lunes", "el 5") a formato YYYY-MM-DD. Si no se menciona fecha, usá hoy.
+Hoy es ${today}. Resolvé fechas relativas ("ayer", "el lunes", "el 5", "este mes", "el mes pasado") a formato YYYY-MM-DD. Si no se menciona fecha al registrar, usá hoy.
 
 Categorías sugeridas:
 - Ingresos (income): ${CATEGORIES.income.join(", ")}
@@ -46,14 +49,23 @@ Categorías sugeridas:
 Elegí la más adecuada; si ninguna encaja usá "Otros".
 
 Respondé SIEMPRE y SOLO con un objeto JSON válido, sin texto adicional ni bloques de código, con esta forma:
-{"reply": string, "proposal": null | {"type": "income" | "expense", "amount": number, "category": string, "description": string | null, "date": "YYYY-MM-DD"}}
+{"reply": string, "proposal": null | {"type": "income" | "expense", "amount": number, "category": string, "description": string | null, "date": "YYYY-MM-DD"}, "query": null | {"kind": "sum" | "top", "type": "income" | "expense", "category": string | null, "from": "YYYY-MM-DD", "to": "YYYY-MM-DD"}}
 
-Reglas:
-- Si el mensaje describe un ingreso o gasto con monto, completá "proposal" y en "reply" resumí brevemente lo que vas a registrar pidiendo que confirme.
+Reglas para registrar:
+- Si el mensaje describe un ingreso o gasto con monto, completá "proposal", dejá "query" en null y en "reply" resumí brevemente lo que vas a registrar pidiendo que confirme.
 - "amount" es un número positivo sin símbolos ni separadores de miles (ej: "3.500" o "3,5k" => 3500).
-- Si falta el monto o no está claro si es ingreso o gasto, "proposal" es null y en "reply" preguntá lo que falta.
-- Si el usuario pregunta otra cosa, respondé breve en "reply" con "proposal": null y recordale para qué servís.
-- Registrá un solo movimiento por vez; si menciona varios, proponé el primero y avisá que después sigue con el resto.`;
+- Si falta el monto o no está claro si es ingreso o gasto, "proposal" y "query" son null y en "reply" preguntá lo que falta.
+- Registrá un solo movimiento por vez; si menciona varios, proponé el primero y avisá que después sigue con el resto.
+
+Reglas para consultar:
+- Si pregunta cuánto gastó o cobró, en qué gastó más, o pide un total o ranking de un período, completá "query", dejá "proposal" en null y NO calcules montos: el servidor los calcula y reemplaza "reply".
+- "kind": "sum" para un total; "top" para el ranking de categorías (en qué gastó o cobró más).
+- "type": "expense" para gastos y "income" para ingresos o cobros.
+- "category": el rubro o el texto a filtrar (por ejemplo "Supermercado" o "Carrefour"). null si pide el total o el ranking general.
+- "from" y "to" inclusive. "Este mes": desde el día 1 del mes de hoy hasta hoy. "El mes pasado": el mes calendario anterior completo. Un mes nombrado sin año: ese mes del año de hoy si ya empezó, si no el año anterior.
+- "proposal" y "query" no van juntos.
+
+Si no es un registro ni una consulta sobre sus movimientos, respondé breve en "reply" con "proposal" y "query" en null y recordale para qué servís.`;
 }
 
 // Algunos modelos free envuelven el JSON en ```json ... ``` o agregan texto.
@@ -118,6 +130,25 @@ export async function POST(request: Request) {
       reply: content.trim() || "No entendí, ¿me lo repetís?",
       proposal: null,
     });
+  }
+
+  const query = output.data.query
+    ? insightQuerySchema.safeParse(output.data.query)
+    : null;
+
+  if (query?.success) {
+    const from = query.data.from <= query.data.to ? query.data.from : query.data.to;
+    const to = query.data.from <= query.data.to ? query.data.to : query.data.from;
+    try {
+      const transactions = await listTransactionsBetween(from, to, query.data.type);
+      return Response.json({
+        reply: answerInsight(transactions, { ...query.data, from, to }),
+        proposal: null,
+      });
+    } catch (error) {
+      console.error("Insight query failed", error);
+      return jsonError("No pude consultar tus movimientos.", 500);
+    }
   }
 
   const proposal = output.data.proposal
