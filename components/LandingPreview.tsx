@@ -43,7 +43,7 @@ export default function LandingPreview() {
           ¿Cuánto gasté en salidas?
         </p>
         <p className="w-fit rounded-xl rounded-bl-sm bg-zinc-100 px-3 py-1.5 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-          $38.400 este mes, un 12% menos que en septiembre.
+          $38.400, un 12% menos que el mes pasado.
         </p>
       </div>
     </div>

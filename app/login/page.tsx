@@ -74,22 +74,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         </div>
 
         <div
-          className="rise space-y-4 rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+          className="rise rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
           style={{ "--i": 4 } as React.CSSProperties}
         >
-          <div className="space-y-1">
-            <h2 className="font-semibold tracking-tight">Entrá a Vuelto</h2>
-            <p className="text-sm text-zinc-500">
-              Te mandamos un link por email. Sin contraseñas, y si es tu primera vez la
-              cuenta se crea sola.
-            </p>
-          </div>
-          {error && (
-            <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">
-              Ese link ya no sirve (es inválido o expiró). Pedí uno nuevo.
-            </p>
-          )}
-          <LoginForm />
+          <LoginForm linkExpired={Boolean(error)} />
         </div>
       </section>
     </div>
