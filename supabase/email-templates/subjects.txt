@@ -1,0 +1,4 @@
+magic-link.html      Tu link para entrar a Vuelto
+confirm-signup.html  Bienvenido a Vuelto
+invite.html          Te invitaron a Vuelto
+change-email.html    Confirmá tu nuevo email en Vuelto

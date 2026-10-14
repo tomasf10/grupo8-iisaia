@@ -9,6 +9,8 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [code, setCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     function onStorage(event: StorageEvent) {
@@ -20,6 +22,22 @@ export default function LoginForm() {
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, [router]);
+
+  async function onVerify(e: React.FormEvent) {
+    e.preventDefault();
+    setVerifying(true);
+    setError(null);
+
+    const { error } = await createClient().auth.verifyOtp({ email, token: code, type: "email" });
+
+    if (error) {
+      setError("Ese código no sirve (es inválido o expiró). Revisalo o pedí uno nuevo.");
+      setVerifying(false);
+      return;
+    }
+    router.replace("/");
+    router.refresh();
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,15 +63,43 @@ export default function LoginForm() {
 
   if (status === "sent") {
     return (
-      <div className="appear rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm dark:border-brand-900 dark:bg-brand-950/60">
-        <p className="font-medium">Te mandamos el link 📬</p>
-        <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-          Lo enviamos a <strong>{email}</strong> (mirá el spam, por las dudas).
-          Abrilo en este mismo navegador y esta pestaña entra sola.
-        </p>
+      <div className="appear space-y-3">
+        <div className="rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm dark:border-brand-900 dark:bg-brand-950/60">
+          <p className="font-medium">Te mandamos el link 📬</p>
+          <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+            Lo enviamos a <strong>{email}</strong> (mirá el spam, por las dudas).
+            Abrilo en este mismo navegador y esta pestaña entra sola, o pegá acá el código
+            del mail.
+          </p>
+        </div>
+        <form onSubmit={onVerify} className="space-y-3">
+          <input
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            required
+            minLength={6}
+            maxLength={10}
+            placeholder="Código"
+            aria-label="Código del email"
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-center font-mono text-lg tracking-[0.4em] outline-none transition-colors placeholder:font-sans placeholder:text-sm placeholder:tracking-normal focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-brand-300 dark:focus:ring-brand-300/20"
+          />
+          {error && <p className="appear text-sm text-rose-600">{error}</p>}
+          <button
+            disabled={verifying || code.length < 6}
+            className="press w-full rounded-lg bg-brand-950 px-4 py-2 text-sm font-medium text-brand-50 hover:bg-brand-900 disabled:opacity-50 dark:bg-brand-300 dark:text-brand-950 dark:hover:bg-brand-200"
+          >
+            {verifying ? "Verificando…" : "Entrar con el código"}
+          </button>
+        </form>
         <button
-          onClick={() => setStatus("idle")}
-          className="press mt-3 text-xs text-zinc-500 underline"
+          onClick={() => {
+            setStatus("idle");
+            setCode("");
+            setError(null);
+          }}
+          className="press text-xs text-zinc-500 underline"
         >
           Usar otro email
         </button>
