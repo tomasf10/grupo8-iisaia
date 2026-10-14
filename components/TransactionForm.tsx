@@ -25,6 +25,8 @@ export default function TransactionForm({ id, initial }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const backTo = id ? "/historial" : "/";
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -52,16 +54,21 @@ export default function TransactionForm({ id, initial }: Props) {
       return;
     }
 
-    router.push("/");
+    router.push(backTo);
     router.refresh();
   }
 
   const input =
-    "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-100 dark:focus:ring-zinc-100";
+    "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-brand-300 dark:focus:ring-brand-300/20";
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
-      <div className="grid grid-cols-2 gap-2 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800">
+    <form onSubmit={onSubmit} className="rise space-y-5" style={{ "--i": 1 } as React.CSSProperties}>
+      <div className="relative grid grid-cols-2 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800">
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-lg bg-white shadow-sm transition-transform duration-200 ease-in-out dark:bg-zinc-950"
+          style={{ transform: type === "income" ? "translateX(100%)" : "translateX(0)" }}
+        />
         {(["expense", "income"] as const).map((t) => (
           <button
             key={t}
@@ -70,11 +77,12 @@ export default function TransactionForm({ id, initial }: Props) {
               setType(t);
               setCategory("");
             }}
-            className={`rounded-lg py-2 text-sm font-medium transition ${
+            aria-pressed={type === t}
+            className={`press relative rounded-lg py-2 text-sm font-medium ${
               type === t
                 ? t === "income"
-                  ? "bg-white text-emerald-700 shadow-sm dark:bg-zinc-950 dark:text-emerald-400"
-                  : "bg-white text-rose-700 shadow-sm dark:bg-zinc-950 dark:text-rose-400"
+                  ? "text-emerald-700 dark:text-emerald-400"
+                  : "text-rose-700 dark:text-rose-400"
                 : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
             }`}
           >
@@ -134,7 +142,7 @@ export default function TransactionForm({ id, initial }: Props) {
       </label>
 
       {error && (
-        <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">
+        <p className="appear rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">
           {error}
         </p>
       )}
@@ -143,13 +151,13 @@ export default function TransactionForm({ id, initial }: Props) {
         <button
           type="submit"
           disabled={saving}
-          className="flex-1 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          className="press flex-1 rounded-lg bg-brand-950 px-4 py-2 text-sm font-medium text-brand-50 hover:bg-brand-900 disabled:opacity-50 dark:bg-brand-300 dark:text-brand-950 dark:hover:bg-brand-200"
         >
           {saving ? "Guardando…" : id ? "Guardar cambios" : "Crear registro"}
         </button>
         <Link
-          href="/"
-          className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium transition hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          href={backTo}
+          className="press rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
         >
           Cancelar
         </Link>

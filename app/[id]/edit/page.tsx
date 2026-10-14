@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import SetupError from "@/components/SetupError";
 import TransactionForm from "@/components/TransactionForm";
 import { uuidSchema } from "@/lib/api";
 import { getTransaction } from "@/lib/transactions";
+
+export const metadata: Metadata = { title: "Editar registro" };
 
 export default async function EditTransactionPage({
   params,
@@ -20,7 +23,7 @@ export default async function EditTransactionPage({
 
   return (
     <div className="mx-auto max-w-md space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Editar registro</h1>
+      <h1 className="rise font-display text-3xl font-semibold tracking-tight">Editar registro</h1>
       <TransactionForm
         id={tx.id}
         initial={{

@@ -1,4 +1,6 @@
-# Gastos e Ingresos
+# Vuelto
+
+_Lo que entra, lo que sale y lo que te queda._
 
 App en Next.js (App Router) para registrar ingresos y gastos, con base de datos en Supabase y un asistente de IA (OpenRouter, modelo gratuito) que carga registros a partir de lenguaje natural.
 
@@ -15,7 +17,9 @@ App en Next.js (App Router) para registrar ingresos y gastos, con base de datos 
 
 | Ruta | Qué hace |
 | --- | --- |
-| `app/page.tsx` | Resumen mensual, gráficos, presupuestos y lista de registros |
+| `app/page.tsx` | Inicio: saludo, resumen del mes, últimos movimientos, presupuestos más comprometidos y gráficos |
+| `app/presupuestos` | Presupuestos por categoría, mes por mes |
+| `app/historial` | Historial agrupado por mes, con filtros y exportación a CSV |
 | `app/login`, `app/auth/*` | Login con magic link, callback y logout |
 | `proxy.ts` | Refresca la sesión y redirige a `/login` si no hay usuario |
 | `app/new`, `app/[id]/edit` | Formulario de alta / edición |

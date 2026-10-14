@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Logo from "@/components/Logo";
 
 export default function AuthComplete() {
   useEffect(() => {
@@ -11,9 +12,10 @@ export default function AuthComplete() {
   }, []);
 
   return (
-    <div className="mx-auto mt-16 max-w-sm space-y-3 rounded-xl border border-zinc-200 bg-white p-5 text-center dark:border-zinc-800 dark:bg-zinc-900">
-      <h1 className="text-lg font-semibold">Sesión iniciada</h1>
-      <p className="text-sm text-zinc-500">Volvé a la pestaña donde pediste el link; ya debería estar en tu cuenta. Si esta pestaña sigue abierta, podés cerrarla.</p>
+    <div className="rise mx-auto mt-16 flex max-w-sm flex-col items-center space-y-3 rounded-xl border border-zinc-200 bg-white p-5 text-center dark:border-zinc-800 dark:bg-zinc-900">
+      <Logo size={40} />
+      <h1 className="font-display text-xl font-semibold">¡Listo, entraste!</h1>
+      <p className="text-sm text-zinc-500">Volvé a la pestaña donde pediste el link; ya debería estar adentro. Si esta pestaña sigue abierta, podés cerrarla.</p>
     </div>
   );
 }

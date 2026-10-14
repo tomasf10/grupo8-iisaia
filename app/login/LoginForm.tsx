@@ -45,15 +45,15 @@ export default function LoginForm() {
 
   if (status === "sent") {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="font-medium">Revisá tu email 📬</p>
-        <p className="mt-1 text-zinc-500">
-          Mandamos un link a <strong>{email}</strong>. Abrilo en este mismo
-          navegador y esta pestaña iniciará sesión automáticamente.
+      <div className="appear rounded-xl border border-brand-200 bg-brand-50 p-4 text-sm dark:border-brand-900 dark:bg-brand-950/60">
+        <p className="font-medium">Te mandamos el link 📬</p>
+        <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+          Lo enviamos a <strong>{email}</strong> (mirá el spam, por las dudas).
+          Abrilo en este mismo navegador y esta pestaña entra sola.
         </p>
         <button
           onClick={() => setStatus("idle")}
-          className="mt-3 text-xs text-zinc-500 underline"
+          className="press mt-3 text-xs text-zinc-500 underline"
         >
           Usar otro email
         </button>
@@ -70,12 +70,12 @@ export default function LoginForm() {
         placeholder="vos@ejemplo.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-100 dark:focus:ring-zinc-100"
+        className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-brand-300 dark:focus:ring-brand-300/20"
       />
-      {error && <p className="text-sm text-rose-600">{error}</p>}
+      {error && <p className="appear text-sm text-rose-600">{error}</p>}
       <button
         disabled={status === "sending"}
-        className="w-full rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        className="press w-full rounded-lg bg-brand-950 px-4 py-2 text-sm font-medium text-brand-50 hover:bg-brand-900 disabled:opacity-50 dark:bg-brand-300 dark:text-brand-950 dark:hover:bg-brand-200"
       >
         {status === "sending" ? "Enviando…" : "Enviarme el link"}
       </button>

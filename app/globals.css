@@ -3,4 +3,203 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
+}
+
+@theme {
+  /* Vuelto: verde menta */
+  --color-brand-50: #effbf5;
+  --color-brand-100: #d8f5e6;
+  --color-brand-200: #b3ead0;
+  --color-brand-300: #7fd9b3;
+  --color-brand-400: #4cc292;
+  --color-brand-500: #28a878;
+  --color-brand-600: #1a8862;
+  --color-brand-700: #176c50;
+  --color-brand-800: #165641;
+  --color-brand-900: #134737;
+  --color-brand-950: #0a2a20;
+  --color-paper: #f7f8f4;
+  --color-paper-dark: #0b0f0d;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  --animate-rise: rise 300ms var(--ease-out) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0.02);
+  }
+}
+
+@keyframes grow-y {
+  from {
+    transform: scaleY(0.02);
+  }
+}
+
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Feedback al presionar: cualquier cosa clickeable con forma de botón. */
+@utility press {
+  transition-property: transform, color, background-color, border-color, opacity;
+  transition-duration: 160ms;
+  transition-timing-function: var(--ease-out);
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+}
+
+/* Entrada escalonada del primer render; --i define el orden. */
+@utility rise {
+  animation: var(--animate-rise);
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+
+@utility grow-x {
+  transform-origin: left;
+  animation: grow-x 500ms var(--ease-out) both;
+  animation-delay: calc(150ms + var(--i, 0) * 40ms);
+}
+
+@utility grow-y {
+  transform-origin: bottom;
+  animation: grow-y 500ms var(--ease-out) both;
+  animation-delay: calc(150ms + var(--i, 0) * 40ms);
+}
+
+@utility typing-dot {
+  animation: typing 1s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 150ms);
+}
+
+/* Entrada al montarse (mensajes del chat, cambios de estado). */
+@utility appear {
+  transition-property: opacity, transform, filter;
+  transition-duration: 220ms;
+  transition-timing-function: var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(4px);
+  }
+}
+
+@utility pop {
+  transition-property: opacity, transform;
+  transition-duration: 200ms;
+  transition-timing-function: var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+/* Panel del chat: anclado al botón de abajo a la derecha. */
+.chat-panel {
+  transform-origin: bottom right;
+  transition:
+    opacity 150ms var(--ease-out),
+    transform 150ms var(--ease-out),
+    visibility 0s linear 150ms;
+}
+.chat-panel[data-open="false"] {
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  visibility: hidden;
+  pointer-events: none;
+}
+.chat-panel[data-open="true"] {
+  transition-duration: 200ms, 200ms, 0s;
+  transition-delay: 0s;
+}
+
+.chat-icon {
+  transition:
+    opacity 160ms var(--ease-out),
+    transform 160ms var(--ease-out),
+    filter 160ms var(--ease-out);
+}
+.chat-icon[data-shown="false"] {
+  opacity: 0;
+  transform: scale(0.8);
+  filter: blur(2px);
+}
+
+/* Pestaña activa de la navegación (ver NavTabs). */
+.nav-pill {
+  clip-path: inset(0 100% 0 0 round 999px);
+}
+.nav-pill[data-hidden="true"] {
+  opacity: 0;
+}
+.nav-pill[data-ready="true"] {
+  transition:
+    clip-path 250ms var(--ease-in-out),
+    opacity 150ms var(--ease-out);
+}
+
+.logo-arrow {
+  transform-origin: center;
+  transition: transform 300ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .logo-link:hover .logo-arrow {
+    transform: rotate(-20deg);
+  }
+  .chat-launcher:hover {
+    transform: scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation-name: fade;
+  }
+  /* Sin transición de transform/filter: el desplazamiento del @starting-style salta y solo queda el fade. */
+  .appear,
+  .pop {
+    transition-property: opacity;
+  }
+  .grow-x,
+  .grow-y,
+  .typing-dot {
+    animation: none;
+  }
+  .nav-pill[data-ready="true"] {
+    transition-property: opacity;
+  }
+  .press:active:not(:disabled),
+  .chat-panel[data-open="false"],
+  .chat-icon[data-shown="false"],
+  .logo-link:hover .logo-arrow {
+    transform: none;
+    filter: none;
+  }
 }
